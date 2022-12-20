@@ -1,0 +1,1408 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+    <meta name="keywords" content="Celestus,Outils,Calculateurs,MMO,Bootstrap,jQuery" />
+    <meta name="author" content="Aqua" />
+    <meta name="description" content="Calculateurs pour Célestus" />
+    <title>Calculateurs Célestus</title>
+    <link rel="icon" href="favicon.ico" />
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/bootstrap-table.min.css" />
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="css/bootstrap-theme.min.css" />
+    <link rel="stylesheet" href="css/font-awesome.min.css" />
+    <link rel="stylesheet" href="css/jquery.bootstrap-touchspin.min.css" />
+    <link rel="stylesheet" href="css/simple-sidebar.min.css" />
+    <!--<link rel="stylesheet" href="css/responsive-tables.min.css" />-->
+    <!--<link rel="stylesheet" href="css/jquery_mobile/jquery.mobile-1.4.5.min.css" />-->
+    <!-- <link rel="stylesheet" href="css/style.css" />-->
+
+    <script type="text/javascript">
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date(); a = s.createElement(o),
+            m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-55710755-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+
+    <!--
+    TODO
+    -Subvention des vaisseaux (incluant les modules MK II)
+    -Correction de bug avec le temps de construction (un module ne peux pas prendre moins que le temps minimum) -- Fait
+    -Calculateur de nombre de flottes
+    -Dans la différence entre le coût avec ou sans modules, ne pas inclure le coût en pp, ou l'inclure aux deux endroits
+    -Calculateur pour le coût des technologies -- Fait
+    -Indiquer le nombre de ressources dépensées que la technologie donne
+    -Permettre d'additionner les calculs pour plusieurs mines/colos -- Fait
+    -Possibilité d'enregistrer des options en local (vos réductions de coûts, spécialisations, etc) -- Fait
+    -Gestion de vos niveaux de mines/technologies (les informations seront enregistrées uniquement sur votre ordinateur, personne d'autre n'y aura accès)
+    -Calculateurs pour les structures orbitales (Rampes de lancement -- Fait, Absorbeurs, AIA -- Manque le coût de l'AIA, etc), coût des vaisseaux, puissance et coût des plans personnalisés, défenses, production des secteurs/colonies (modules miniers,concentrateurs, etc.)
+    -Autres idées?
+    -Modules Miniers MK II
+    -Calculateur de ND
+    -Calculateurs divers pour bâtiments (capacité de stockage, vitesse production, remboursement du recyclage, production mines)
+    -->
+
+</head>
+
+<body>
+    <nav class="navbar navbar-default no-margin">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header fixed-brand">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" id="menu-toggle">
+                <span class="fa fa-rocket" aria-hidden="true"></span>
+            </button>
+            <a class="navbar-brand" href="#"><i class="fa fa-rocket fa-4"></i> Calculateurs Célestus</a>
+        </div><!-- navbar-header-->
+
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li class="active"><button class="navbar-toggle collapse in" data-toggle="collapse" id="menu-toggle-2"> <span class="fa fa-rocket" aria-hidden="true"></span></button></li>
+            </ul>
+        </div><!-- bs-example-navbar-collapse-1 -->
+    </nav>
+    <div id="wrapper">
+        <!-- Sidebar -->
+        <div id="sidebar-wrapper">
+            <ul class="sidebar-nav nav-pills nav-stacked" id="menu">
+
+                <li class="menu menubatiments menutechnologies menustructures menucoutvaisseaux">
+                    <a href="#"><span class="fa-stack fa-lg pull-left"><i class="fa fa-dashboard fa-stack-1x "></i></span> Création</a>
+                    <ul class="nav-pills nav-stacked" style="list-style-type:none;">
+                        <li class="menu menubatiments"><a href="javascript:showDiv('batiments')"><span class="fa-stack fa-lg pull-left"><i class="fa fa-dashboard fa-stack-1x "></i></span>Bâtiments</a></li>
+                        <li class="menu menutechnologies"><a href="javascript:showDiv('technologies')"><span class="fa-stack fa-lg pull-left"><i class="fa fa-dashboard fa-stack-1x "></i></span>Technologies</a></li>
+                        <li class="menu menustructures"><a href="javascript:showDiv('structures')"><span class="fa-stack fa-lg pull-left"><i class="fa fa-dashboard fa-stack-1x "></i></span>Structures</a></li>
+                        <li class="menu menucoutvaisseaux"><a href="javascript:showDiv('coutvaisseaux')"><span class="fa-stack fa-lg pull-left"><i class="fa fa-dashboard fa-stack-1x "></i></span>Vaisseaux</a></li>
+                        <!--<li><a href="javascript:showDiv('vaisseaux')"><span class="fa-stack fa-lg pull-left"><i class="fa fa-dashboard fa-stack-1x "></i></span>Vaisseaux</a></li>
+                        <li><a href="javascript:showDiv('defenses')"><span class="fa-stack fa-lg pull-left"><i class="fa fa-dashboard fa-stack-1x "></i></span>Défenses</a></li>
+                        <li><a href="javascript:showDiv('infanterie')"><span class="fa-stack fa-lg pull-left"><i class="fa fa-dashboard fa-stack-1x "></i></span>Infanterie</a></li>-->
+                    </ul>
+                </li>
+                <!--
+                <li>
+                    <a href="#"><span class="fa-stack fa-lg pull-left"><i class="fa fa-flag fa-stack-1x "></i></span> Gestion</a>
+                    <ul class="nav-pills nav-stacked" style="list-style-type:none;">
+                        <li><a href="#"><span class="fa-stack fa-lg pull-left"><i class="fa fa-flag fa-stack-1x "></i></span>Actions</a></li>
+                        <li><a href="#"><span class="fa-stack fa-lg pull-left"><i class="fa fa-flag fa-stack-1x "></i></span>Empire</a></li>
+                        <li><a href="#"><span class="fa-stack fa-lg pull-left"><i class="fa fa-flag fa-stack-1x "></i></span>Commerce</a></li>
+                        <li><a href="#"><span class="fa-stack fa-lg pull-left"><i class="fa fa-flag fa-stack-1x "></i></span>Spécialisation</a></li>
+                        <li><a href="#"><span class="fa-stack fa-lg pull-left"><i class="fa fa-flag fa-stack-1x "></i></span>Assurance</a></li>
+
+                    </ul>
+                </li>
+                <li>
+                    <a href="#"><span class="fa-stack fa-lg pull-left"><i class="fa fa-cloud-download fa-stack-1x "></i></span>Navigation</a>
+                </li>
+                <li>
+                    <a href="#"> <span class="fa-stack fa-lg pull-left"><i class="fa fa-cart-plus fa-stack-1x "></i></span>Diplomatie</a>
+                </li>
+                <li>
+                    <a href="#"><span class="fa-stack fa-lg pull-left"><i class="fa fa-youtube-play fa-stack-1x "></i></span>Communications</a>
+                </li>
+                <li>
+                    <a href="#"><span class="fa-stack fa-lg pull-left"><i class="fa fa-wrench fa-stack-1x "></i></span>Liens Externes</a>
+                </li>
+                    -->
+                <li class="menu menuoptions menuniveauxtechnologies menuplanvaisseaux">
+                    <a href="#"><span class="fa-stack fa-lg pull-left"><i class="fa fa-gear fa-stack-1x "></i></span>Outils</a>
+                    <ul class="nav-pills nav-stacked" style="list-style-type:none;">
+                        <li class="menu menuoptions"><a href="javascript:showDiv('options')"><span class="fa-stack fa-lg pull-left"><i class="fa fa-gear fa-stack-1x "></i></span>Options</a></li>
+                        <li class="menu menuniveauxtechnologies"><a href="javascript:showDiv('niveauxtechnologies')"><span class="fa-stack fa-lg pull-left"><i class="fa fa-gear fa-stack-1x "></i></span>Niveaux technologies</a></li>
+                        <li class="menu menuplanvaisseaux"><a href="javascript:showDiv('planvaisseaux')"><span class="fa-stack fa-lg pull-left"><i class="fa fa-dashboard fa-stack-1x "></i></span>Plans de vaisseaux</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div><!-- /#sidebar-wrapper -->
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <div class="container-fluid">
+                <div class="panel panel-primary moduleCalc" style="display: none;" id="batiments">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <b>Coût des bâtiments</b>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="panSaisie" class="col-md-6 col-xs-12 panel-body panel panel-default">
+                                    <h4>Données de l'acheteur</h4>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="selectBatiment">Bâtiment à construire</label>
+                                            <select id="selectBatiment" class="form-control">
+                                                <optgroup label="Structures de production">
+                                                    <option value="BatM">Mine de Métal</option>
+                                                    <option value="BatT">Raffinerie de Tritium</option>
+                                                    <option value="BatH">Urbanisation</option>
+                                                    <option value="BatP">Concentrateur</option>
+                                                    <option value="BatE">Centrale électrique</option>
+                                                    <option value="BatC">META Cité</option>
+                                                    <option value="BatGF">Centrale de Fusion</option>
+                                                    <option value="BatME">Entrepôt de Métal</option>
+                                                    <option value="BatTE">Entrepôt de Tritium</option>
+                                                </optgroup>
+                                                <optgroup label="Structures logistiques">
+                                                    <option value="BatCI">Centre Industriel</option>
+                                                    <option value="BatUC">Usine Cybernétique</option>
+                                                    <option value="BatTech">Centre de Recherche</option>
+                                                    <option value="BatCa">Caserne</option>
+                                                    <option value="BatCS">Chantier spatial</option>
+                                                    <option value="BatSP">SpatioPort</option>
+                                                    <option value="BatCR">Centre de recyclage</option>
+                                                    <option value="BatAS">Ascenceur Spatial</option>
+                                                    <option value="BatAc">Académie</option>
+                                                    <option value="BatPM">Palais</option>
+                                                </optgroup>
+                                                <optgroup label="Bâtiments expérimentaux">
+                                                    <option value="BatRa">Radar</option>
+                                                    <option value="SOC">Oeil Céleste</option>
+                                                    <option value="SAT">Accélérateur Temporel</option>
+                                                    <option value="SBO">Bouclier Occultant</option>
+                                                    <option value="SSa">Satomisateur</option>
+                                                    <option value="SGH">Générateur Hyperspatial Zero</option>
+                                                </optgroup>
+                                                <optgroup label="Défenses avancées">
+                                                    <option value="SDD">Drones de Défense</option>
+                                                    <option value="SPO">Défense Orbitale au Plasma</option>
+                                                    <option value="SBL">Bouclier Planétaire</option>
+                                                    <option value="BatCO">Couronne Orbitale</option>
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="txtColonieBat">Colonie</label>
+                                            <input type="text" id="txtColonieBat" class="form-control" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="nudActuel">Niveau actuel</label>
+                                            <!--<div class="input-group spinner">
+                                                <input id="nudActuel" type="text" class="niveauBat form-control" value="0" />
+                                                <div class="input-group-bt-vertical">
+                                                    <button class="btn btn-default"><i class="fa fa-caret-up"></i></button>
+                                                    <button class="btn btn-default"><i class="fa fa-caret-down"></i></button>
+                                                </div>
+                                            </div>-->
+                                            <input id="nudActuel" type="text" class="niveauBat form-control spinner" value="0" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="nudDesire">Niveau désiré</label>
+                                            <!--<div class="input-group spinner">
+                                                <input id="nudDesire" type="text" class="niveauBat form-control" value="1" />
+                                                <div class="input-group-bt-vertical">
+                                                    <button class="btn btn-default"><i class="fa fa-caret-up"></i></button>
+                                                    <button class="btn btn-default"><i class="fa fa-caret-down"></i></button>
+                                                </div>
+                                            </div>-->
+                                            <input id="nudDesire" type="text" class="niveauBat form-control spinner" value="1" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="nudReduc">Réduction coût</label>
+                                            <!--<div class="input-group spinner">
+                                                <input id="nudReduc" type="text" class="reductionCout form-control" value="1" />
+                                                <div class="input-group-bt-vertical">
+                                                    <button class="btn btn-default"><i class="fa fa-caret-up"></i></button>
+                                                    <button class="btn btn-default"><i class="fa fa-caret-down"></i></button>
+                                                </div>
+                                            </div>-->
+                                            <input id="nudReduc" type="text" class="reductionCout form-control spinner" value="1" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <br />
+                                            <div class="input-group">
+                                                <div class="input-group-addon">
+                                                    <input type="checkbox" id="chkGouvBat" class="checkbox" />
+                                                </div>
+                                                <label for="chkGouvBat" class="form-control">Gouverneur bâtisseur</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="nudPolitiqueBat">Subventions politiques</label>
+                                            <input id="nudPolitiqueBat" type="text" class="form-control spinner" value="0" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <br />
+                                            <div class="input-group">
+                                                <div class="input-group-addon">
+                                                    <input type="checkbox" id="chkSCL" class="checkbox" />
+                                                </div>
+                                                <label for="chkSCL" class="form-control">Station de Const. Lourde</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="panBatisseur" class="col-md-6 col-xs-12 panel-body panel panel-default">
+                                    <h4>Données du bâtisseur</h4>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="input-group">
+                                                <div class="input-group-addon">
+                                                    <input type="checkbox" id="chkGouvAm" class="checkbox" />
+                                                </div>
+                                                <label for="chkGouvAm" class="form-control">Gouverneur-amiral</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="input-group">
+                                                <div class="input-group-addon">
+                                                    <input type="checkbox" id="chkOptPlan" class="checkbox" />
+                                                </div>
+                                                <label for="chkOptPlan" class="form-control">Optimisation des plans</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label>Nombre de modules</label>
+                                            <input id="txtNbrMKII" type="text" class="form-control" value="0" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="nudNbrChan">Nombre de chantiers</label>
+                                            <!--<div class="input-group spinner">
+                                                <input id="nudNbrChan" type="text" class="form-control" value="70" />
+                                                <div class="input-group-bt-vertical">
+                                                    <button class="btn btn-default"><i class="fa fa-caret-up"></i></button>
+                                                    <button class="btn btn-default"><i class="fa fa-caret-down"></i></button>
+                                                </div>
+                                            </div>-->
+                                            <input id="nudNbrChan" type="text" class="niveauBat form-control spinner" value="70" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="nudPolitiqueBatMKII">Subventions politiques</label>
+                                            <input id="nudPolitiqueBatMKII" type="text" class="form-control spinner" value="0" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div id="panResultat" class="col-md-6 col-xs-12 panel panel-default panel-body">
+                                    <h4>Coût affiché du bâtiment</h4>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label id="lblCoutMetal">Métal</label>
+                                            <div id="coutMetal" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label id="lblCoutTrit">Tritium</label>
+                                            <div id="coutTrit" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label id="lblCoutPP">Photopiles</label>
+                                            <div id="coutPP" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label id="lblZRC">Équivalent ZRC</label>
+                                            <div id="coutZRC" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-4 bg-success">
+                                            <label id="lblMKII">Modules MK II</label>
+                                            <div id="nbrMKII" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label id="lblCoutPPMKII">Photopiles avec MK II</label>
+                                            <div id="coutPPMKII" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="panModules" class="col-md-6 col-xs-12 panel panel-default panel-body">
+                                    <h4>Coût affiché des modules</h4>
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <label id="lblCoutMetalMKII">Coût Métal</label>
+                                            <div id="coutMetalMKII" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label id="lblCoutTritMKII">Coût Tritium</label>
+                                            <div id="coutTritMKII" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label id="lblCoutPopMKII">Population</label>
+                                            <div id="coutPopMKII" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label id="lblCoutZRCMKII">Coût ZRC</label>
+                                            <div id="coutZRCMKII" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label id="lblZRCMKII">Total ZRC</label>
+                                            <div id="totalZRCMKII" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label id="lblTempsMKII">Temps de construction</label>
+                                            <div id="nbrTempsMKII" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label id="lblEconomie">Différence</label>
+                                            <div id="totalEconomieZRC" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="panReelResultat" class="col-md-6 col-xs-12 panel panel-default panel-body">
+                                    <h4>Coût réel du bâtiment</h4>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label id="lblCoutReelMetal">Métal</label>
+                                            <div id="coutReelMetal" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label id="lblCoutReelTrit">Tritium</label>
+                                            <div id="coutReelTrit" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label id="lblCoutReelPP">Photopiles</label>
+                                            <div id="coutReelPP" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label id="lblReelZRC">Équivalent ZRC</label>
+                                            <div id="coutReelZRC" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-4 bg-success">
+                                            <label id="lblReelMKII">Modules MK II</label>
+                                            <div id="nbrReelMKII" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label id="lblCoutReelPPMKII">Photopiles avec MK II</label>
+                                            <div id="coutReelPPMKII" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="panReelModules" class="col-md-6 col-xs-12 panel panel-default panel-body">
+                                    <h4>Coût réel des modules</h4>
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <label id="lblCoutReelMetalMKII">Coût Métal</label>
+                                            <div id="coutReelMetalMKII" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label id="lblCoutReelTritMKII">Coût Tritium</label>
+                                            <div id="coutReelTritMKII" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label id="lblCoutReelPopMKII">Population</label>
+                                            <div id="coutReelPopMKII" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label id="lblCoutReelZRCMKII">Coût ZRC</label>
+                                            <div id="coutReelZRCMKII" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label id="lblReelZRCMKII">Total ZRC</label>
+                                            <div id="totalReelZRCMKII" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label id="lblReelTempsMKII">Temps de construction</label>
+                                            <div id="nbrReelTempsMKII" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label id="lblReelEconomie">Différence</label>
+                                            <div id="totalReelEconomieZRC" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="panel panel-body panel-default">
+                                    <h4>
+                                        Liste de construction
+                                    </h4>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <input id="btnAjouter" type="button" class="btn btn-success pull-left" value="Ajouter" />
+                                        </div>
+                                    </div>
+                                    <br />
+                                    <table data-cache="false" data-height="300" id="listeBatiments" data-striped="true" class="table table-hover bootstrapTable">
+                                        <thead>
+                                            <tr>
+                                                <th data-field="codeBat" data-visible="false"></th>
+                                                <th data-field="nomBat">Bâtiment</th>
+                                                <th data-field="nomColo">Colonie</th>
+                                                <th data-field="nivActuel" data-formatter="numberFormat">Niveau actuel</th>
+                                                <th data-field="nivVoulu" data-formatter="numberFormat">Niveau désiré</th>
+                                                <th data-field="coutM" data-formatter="big_number">Métal</th>
+                                                <th data-field="coutT" data-formatter="big_number">Tritium</th>
+                                                <th data-field="coutP" data-formatter="big_number">Photopiles</th>
+                                                <th data-field="coutMKII" data-formatter="big_number">Modules</th>
+                                                <th data-field="actions">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td><strong>Total</strong></td>
+                                                <td><strong></strong></td>
+                                                <td class="totalBatsActuel"><strong></strong></td>
+                                                <td class="totalBatsVoulu"><strong></strong></td>
+                                                <td data-field="coutM" class="totalBatsMetal"><strong></strong></td>
+                                                <td data-field="coutT" class="totalBatsTrit"><strong></strong></td>
+                                                <td data-field="coutP" class="totalBatsPP"><strong></strong></td>
+                                                <td data-field="coutMKII" class="totalBatsModules"><strong></strong></td>
+                                                <td><strong></strong></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <input id="btnImporterListeBats" type="button" class="btn btn-warning pull-left" value="Importer" />
+                                            <input id="btnExporterListeBats" type="button" class="btn btn-primary pull-left" value="Exporter" />
+
+                                            <input id="btnVider" type="button" class="btn btn-danger pull-right" value="Vider" />
+                                            <button type="button" id="btnVoirDetailsListeBats" class="btn btn-info pull-right" data-toggle="modal" data-target="#resumeBats">Résumé</button>
+                                        </div>
+                                    </div>
+                                    <div class="modal fade" id="resumeBats" tabindex="-1" role="dialog" aria-labelledby="titreResume" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Fermer</span></button>
+                                                    <h4 class="modal-title" id="titreResume">Liste de bâtiments - résumé</h4>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div id="resumeCommande" class="row">Détails sur tout ça</div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-primary pull-left" id="btnSelectionnerDetailsModules">Sélectionner</button>
+                                                    <button type="button" class="btn btn-info" data-dismiss="modal">Fermer</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--Technologies-->
+                <div class="panel panel-primary moduleCalc" style="display: none;" id="technologies">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <b>Coût des technologies</b>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <!--
+                                    <div id="panGlobal" class="col-md-12 panel-body panel panel-default">
+                                    <h4>Taux de vente des ressources (en ZRC)</h4>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label>Métal (Max 5 000)</label>
+                                            <input id="tauxMetal" type="text" class="form-control" value="1000" />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label>Tritium (Max 15 000)</label>
+                                            <input id="tauxTritium" type="text" class="form-control" value="4000" />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label>Photopiles (Max 2 000 000)</label>
+                                            <input id="tauxPP" type="text" class="form-control" value="1000000" />
+                                        </div>
+                                    </div>
+                                </div>
+                                    -->
+                                <div id="panSaisieTech" class="col-md-6 col-xs-12 panel-body panel panel-default">
+                                    <h4>Données de la technologie</h4>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="selectTechnologie">Technologie à augmenter</label>
+                                            <select id="selectTechnologie" class="form-control">
+                                                <optgroup label="Technologies Spatiales">
+                                                    <option value="TechSt">Structure</option>
+                                                    <option value="TechAC">Armes Conventionnelles</option>
+                                                    <option value="TechPC">Prop. Conventionnelle</option>
+                                                    <option value="TechLa">Laser</option>
+                                                    <option value="TechIEM">Impulsion EM</option>
+                                                    <option value="TechPl">Plasma</option>
+                                                    <option value="TechPH">Prop. Hyperespace</option>
+                                                </optgroup>
+                                                <optgroup label="Energie et Information">
+                                                    <option value="TechEn">Energie</option>
+                                                    <option value="TechSe">Sécurité</option>
+                                                    <option value="TechEs">Espionnage</option>
+                                                    <option value="TechIn">Informatique</option>
+                                                    <option value="TechOQ">Ordinateurs Quantiques</option>
+                                                </optgroup>
+                                                <optgroup label="Sciences logistiques">
+                                                    <option value="TechCo">Conscription</option>
+                                                    <option value="TechS">Stratégie</option>
+                                                    <option value="TechSu">Superstructure</option>
+                                                    <option value="TechEx">Exploitation</option>
+                                                    <option value="TechTe">Terraformation</option>
+                                                </optgroup>
+                                                <optgroup label="Maîtrises Ultimes">
+                                                    <option value="TechME">Maitrise de l'Espace</option>
+                                                    <option value="TechMT">Maitrise du Temps</option>
+                                                    <option value="TechMM">Maitrise de la Matière</option>
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="nudActuelTech">Niveau actuel</label>
+                                            <input id="nudActuelTech" type="text" class="niveauTech form-control spinner" value="0" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="nudDesireTech">Niveau désiré</label>
+                                            <input id="nudDesireTech" type="text" class="niveauTech form-control spinner" value="1" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="nudReducTech">Réduction coût</label>
+                                            <input id="nudReducTech" type="text" class="reductionCoutTech form-control spinner" value="1" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <br />
+                                            <div class="input-group">
+                                                <div class="input-group-addon">
+                                                    <input type="checkbox" id="chkGouvTech" class="checkbox" />
+                                                </div>
+                                                <label for="chkGouvTech" class="form-control">Gouverneur technocrate</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="nudObjReduc">Données de recherche</label>
+                                            <input id="nudObjReduc" type="text" class="niveauTech form-control spinner" value="0" />
+
+                                        </div>
+                                        <div class="col-md-6">
+                                            <br />
+                                            <div class="input-group">
+                                                <div class="input-group-addon">
+                                                    <input type="checkbox" id="chkCQActive" class="checkbox" />
+                                                </div>
+                                                <label for="chkCQActive" class="form-control">Centre Quantique activé</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="nudPtsTech">Points de technologie (Technologistes seulement)</label>
+                                            <input id="nudPtsTech" type="text" class="niveauTech form-control spinner" value="0" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <br />
+                                            <label for="nudPolitiqueTech">Subventions politiques</label>
+                                            <input id="nudPolitiqueTech" type="text" class="form-control spinner" value="0" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--
+                                    <div id="panTechnologiste" class="col-md-6 col-xs-12 panel-body panel panel-default">
+                                    <h4>Données du bâtisseur</h4>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="input-group">
+                                                <div class="input-group-addon">
+                                                    <input type="checkbox" id="chkGouvAm" class="checkbox" />
+                                                </div>
+                                                <label for="chkGouvAm" class="form-control">Gouverneur-amiral</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="input-group">
+                                                <div class="input-group-addon">
+                                                    <input type="checkbox" id="chkOptPlan" class="checkbox" />
+                                                </div>
+                                                <label for="chkOptPlan" class="form-control">Optimisation des plans</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label>Nombre de modules</label>
+                                            <input id="txtNbrMKII" type="text" class="form-control" value="0" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="nudNbrChan">Nombre de chantiers</label>
+                                            <input id="nudNbrChan" type="text" class="niveauBat form-control spinner" value="70" />
+                                        </div>
+                                    </div>
+                                </div>
+                                    -->
+                                <div id="panResultatTech" class="col-md-6 col-xs-12 panel panel-default panel-body">
+                                    <h4>Coût affiché de la technologie</h4>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label id="lblCoutMetalTech">Métal</label>
+                                            <div id="coutMetalTech" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label id="lblCoutTritTech">Tritium</label>
+                                            <div id="coutTritTech" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label id="lblCoutPPTech">Photopiles</label>
+                                            <div id="coutPPTech" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label id="lblZRCTech">Équivalent ZRC</label>
+                                            <div id="coutZRCTech" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label id="lblZRCTech">ZRC via Technologiste</label>
+                                            <div id="totalZRCTech" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-4 bg-success">
+                                            <label id="lblEconomieTech">Différence</label>
+                                            <div id="totalEconomieZRCTech" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="panReelResultatTech" class="col-md-6 col-xs-12 panel panel-default panel-body">
+                                    <h4>Coût réel de la technologie</h4>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label id="lblCoutReelMetalTech">Métal</label>
+                                            <div id="coutReelMetalTech" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label id="lblCoutReelTritTech">Tritium</label>
+                                            <div id="coutReelTritTech" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label id="lblCoutReelPPTech">Photopiles</label>
+                                            <div id="coutReelPPTech" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label id="lblReelZRCTech">Équivalent ZRC</label>
+                                            <div id="coutReelZRCTech" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label id="lblReelZRCTech">ZRC via Technologiste</label>
+                                            <div id="totalReelZRCTech" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                        <div class="col-md-4 bg-success">
+                                            <label id="lblReelEconomieTech">Différence</label>
+                                            <div id="totalReelEconomieZRCTech" data-toggle="tooltip" title="0">0</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="panel panel-body panel-default">
+                                    <h4>
+                                        Liste de recherche
+                                    </h4>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <input id="btnAjouterTech" type="button" class="btn btn-success pull-left" value="Ajouter" />
+                                        </div>
+                                    </div>
+                                    <br />
+                                    <table data-cache="false" data-height="300" id="listeTechnologies" data-striped="true" class="table table-hover bootstrapTable">
+                                        <thead>
+                                            <tr>
+                                                <th data-field="codeTech" data-visible="false"></th>
+                                                <th data-field="nomTech">Technologie</th>
+                                                <th data-field="nivActuel" data-formatter="numberFormat">Niveau actuel</th>
+                                                <th data-field="nivVoulu" data-formatter="numberFormat">Niveau désiré</th>
+                                                <th data-field="coutM" data-formatter="big_number">Métal</th>
+                                                <th data-field="coutT" data-formatter="big_number">Tritium</th>
+                                                <th data-field="coutP" data-formatter="big_number">Photopiles</th>
+                                                <th data-field="coutTechno" data-formatter="big_number">Via techno</th>
+                                                <th data-field="actions">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td><strong>Total</strong></td>
+                                                <td class="totalTechsActuel"><strong></strong></td>
+                                                <td class="totalTechsVoulu"><strong></strong></td>
+                                                <td data-field="coutM" class="totalTechsMetal"><strong></strong></td>
+                                                <td data-field="coutT" class="totalTechsTrit"><strong></strong></td>
+                                                <td data-field="coutP" class="totalTechsPP"><strong></strong></td>
+                                                <td data-field="coutTechno" class="totalTechsTechno"><strong></strong></td>
+                                                <td><strong></strong></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <input id="btnImporterListeTechs" type="button" class="btn btn-warning pull-left" value="Importer" />
+                                            <input id="btnExporterListeTechs" type="button" class="btn btn-primary pull-left" value="Exporter" />
+
+                                            <input id="btnViderTech" type="button" class="btn btn-danger pull-right" value="Vider" />
+                                            <!--<button type="button" id="btnVoirDetailsListeTechs" class="btn btn-info pull-right" data-toggle="modal" data-target="#resumeBats">Résumé</button>-->
+                                        </div>
+                                    </div>
+                                    <!--<div class="modal fade" id="resumeTechs" tabindex="-1" role="dialog" aria-labelledby="titreResume" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Fermer</span></button>
+                                                    <h4 class="modal-title" id="titreResume">Liste de bâtiments - résumé</h4>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div id="resumeCommande" class="row">Détails sur tout ça</div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-primary pull-left" id="btnSelectionnerDetailsModules">Sélectionner</button>
+                                                    <button type="button" class="btn btn-info" data-dismiss="modal">Fermer</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>-->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-primary moduleCalc" style="display: none;" id="options">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <b>Configuration des paramètres</b>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="panGlobal" class="col-md-12 panel-body panel panel-default">
+                                    <h4>Taux de vente des ressources (en ZRC)</h4>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label>Métal (Max 50 000)</label>
+                                            <input id="tauxMetal" type="text" class="form-control" value="500" />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label>Tritium (Max 150 000)</label>
+                                            <input id="tauxTritium" type="text" class="form-control" value="1000" />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label>Photopiles (Max 20 000 000)</label>
+                                            <input id="tauxPP" type="text" class="form-control" value="1000000" />
+                                        </div>
+                                    </div>
+                                    <h4>Prix d'achat des récompenses de faction (en ZRC)</h4>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label>Générateur d'Inertie Zéro (Max 150 000 000)</label>
+                                            <input id="prixGiZ" type="text" class="form-control" value="20000000" />
+                                        </div>
+                                    </div>
+                                    <br />
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="input-group">
+                                                <div class="input-group-addon">
+                                                    <input type="checkbox" id="chkCoutsAffiches" class="checkbox" checked="checked" />
+                                                </div>
+                                                <label for="chkCoutsAffiches" class="form-control">Montrer les coûts affichés</label>
+                                                </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="input-group">
+                                                <div class="input-group-addon">
+                                                    <input type="checkbox" id="chkCoutsReels" class="checkbox" checked="checked" />
+                                                </div>
+                                                <label for="chkCoutsReels" class="form-control">Montrer les coûts réels</label>
+                                                </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Structures orbitales -->
+                <div class="panel panel-primary moduleCalc" style="display: none;" id="structures">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <b>Structures orbitales</b>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="panel-group" id="accordionStructures">
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading">
+                                            <h3 class="panel-title">
+                                                <a data-toggle="collapse" data-parent="#accordionStructures" href="#rampeLancement">
+                                                    Rampes de lancement
+                                                </a>
+                                            </h3>
+                                        </div>
+                                        <div id="rampeLancement" class="panel-collapse collapse in">
+                                            <div class="panel-body">
+                                                <div class="col-md-12">
+                                                    <div class="col-md-6">
+                                                        <div class="col-md-4">
+                                                            <label for="nudNiveauRampe">Niveau</label>
+                                                            <input id="nudNiveauRampe" type="text" class="form-control spinner" value="0" />
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <label for="nudPorteeRampe">Portée</label>
+                                                            <input id="nudPorteeRampe" type="text" class="form-control spinner" value="0" />
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <label for="nudVitesseRampe">Vitesse</label>
+                                                            <input id="nudVitesseRampe" type="text" class="form-control spinner" value="200" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="col-md-4">
+                                                            <label for="lblCoutRampePP">Photopiles</label>
+                                                            <div id="coutRampePP" data-toggle="tooltip" title="0">0</div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <label for="LblCoutRampeMC">Modules de construction</label>
+                                                            <div id="coutRampeMC" data-toggle="tooltip" title="0">0</div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <label for="lblPrixRampeElements">Prix GiZ</label>
+                                                            <div id="prixRampeElements" data-toggle="tooltip" title="0">0</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading">
+                                            <h3 class="panel-title">
+                                                <a data-toggle="collapse" data-parent="#accordionStructures" href="#AIA">
+                                                    Atelier Industriel Aérospatial (A.I.A)
+                                                </a>
+                                            </h3>
+                                        </div>
+                                        <div id="AIA" class="panel-collapse collapse">
+                                            <div class="panel-body">
+                                                <div class="col-md-12">
+                                                    <div class="col-md-2">
+                                                        <label for="nudNiveauAIA">Niveau</label>
+                                                        <input id="nudNiveauAIA" type="text" class="form-control spinner" value="0" />
+                                                    </div>
+                                                    <div class="col-md-10">
+                                                        <div class="col-md-2">
+                                                            <label id="lblBonusAIA">Coefficient AIA</label>
+                                                            <br />
+                                                            <div id="bonusAIA" data-toggle="tooltip" title="0">0</div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <label id="lblAbsorptionMetal">Absorption métal</label>
+                                                            <br />
+                                                            <div id="absorptionMetal" data-toggle="tooltip" title="0">0</div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <label id="lblAbsorptionTritium">Absorption tritium</label>
+                                                            <br />
+                                                            <div id="absorptionTritium" data-toggle="tooltip" title="0">0</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Plan de vaisseaux -->
+                <div class="panel panel-primary moduleCalc" style="display: none;" id="planvaisseaux">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <b>Plans de vaisseaux</b>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="panPlanVaisseau">
+                                    Coming soon! / Bientôt disponible !
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Construction de vaisseaux -->
+                <div class="panel panel-primary moduleCalc" style="display: none;" id="coutvaisseaux">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <b>Construction de vaisseaux</b>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="panChoixVaisseau">
+                                    <div class="col-md-6 col-xs-12 panel-body panel panel-default">
+                                        <h4>Informations de construction</h4>
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <label for="selectVaisseau">Vaisseau à construire</label>
+                                                <select id="selectVaisseau" class="form-control selectVaisseau"></select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <br />
+                                                <input id="btnChercheVaisseau" type="button" class="btn btn-default" value="Rechercher" onclick="RechercherVaisseau('selectVaisseau');" />
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label>Nombre</label>
+                                                <input id="txtNbrVaiss" type="text" class="form-control" value="0" />
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <br />
+                                                <label for="nudPolitiqueVaiss">Subventions politiques</label>
+                                                <input id="nudPolitiqueVaiss" type="text" class="form-control spinner" value="0" />
+                                            </div>
+                                            
+                                        </div>
+                                        <div class="row">
+                                            <!--<div class="col-md-6">
+                                                <label for="nudReducVaiss">Réduction temps</label>
+                                                <input id="nudReducVaiss" type="text" class="reductionCoutTech form-control spinner" value="0" />
+                                            </div>-->
+                                            <div class="col-md-6">
+                                                <br />
+                                                <div class="input-group">
+                                                    <div class="input-group-addon">
+                                                        <input type="checkbox" id="chkGouvAmi" class="checkbox" />
+                                                    </div>
+                                                    <label for="chkGouvAmi" class="form-control">Gouverneur-amiral</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <br />
+                                                <div class="input-group">
+                                                    <div class="input-group-addon">
+                                                        <input type="checkbox" id="chkOptiPlan" class="checkbox" />
+                                                    </div>
+                                                    <label for="chkOptiPlan" class="form-control">Optimisation des plans</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <br />
+                                                <label for="nudNiveauChantier">Chantier Spatial</label>
+                                                <input id="nudNiveauChantier" type="text" class="form-control spinner" value="0" />
+                                            </div>
+                                            <div class="col-md-6">
+                                                <br />
+                                                <label for="nudNiveauUC">Using Cybernétique</label>
+                                                <input id="nudNiveauUC" type="text" class="form-control spinner" value="0" />
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <br />
+                                                <label for="nudNiveauBS">Bases spatiales</label>
+                                                <input id="nudNiveauBS" type="text" class="form-control spinner" value="0" />
+                                            </div>
+                                            <div class="col-md-6">
+                                                <br />
+                                                <label for="nudNiveauTC">Technocités</label>
+                                                <input id="nudNiveauTC" type="text" class="form-control spinner" value="0" />
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <br />
+                                                <div class="input-group">
+                                                    <div class="input-group-addon">
+                                                        <input type="checkbox" id="chkMetaCite" class="checkbox" />
+                                                    </div>
+                                                    <label for="chkMetaCite" class="form-control">META Cité</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <br />
+                                                <div class="input-group">
+                                                    <div class="input-group-addon">
+                                                        <input type="checkbox" id="chkStaLour" class="checkbox" />
+                                                    </div>
+                                                    <label for="chkStaLour" class="form-control">Station de Construction Lourde</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <br />
+                                                <label for="selectBonusSegment">Bonus Segment</label>
+                                                <select id="selectBonusSegment" class="form-control">
+                                                    <option>1.0</option>
+                                                    <option>1.25</option>
+                                                    <option>1.4</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <br />
+                                                <label for="selectCoeffFdf">Coefficient Flotte de Faction</label>
+                                                <select id="selectCoeffFdf" class="form-control">
+                                                    <option>1</option>
+                                                    <option>2</option>
+                                                    <option>5</option>
+                                                    <option>10</option>
+                                                    <option>20</option>
+                                                    <option>50</option>
+                                                    <option>100</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="panCoutVaisseau">
+                                    <div class="col-md-6 col-xs-12 panel-body panel panel-default">
+                                        <h4>Coût et temps affichés de construction</h4>
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <label id="lblCoutMetalVaiss">Coût Métal</label>
+                                                <div id="coutMetalVaiss" data-toggle="tooltip" title="0">0</div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label id="lblCoutTritVaiss">Coût Tritium</label>
+                                                <div id="coutTritVaiss" data-toggle="tooltip" title="0">0</div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label id="lblCoutPopVaiss">Population</label>
+                                                <div id="coutPopVaiss" data-toggle="tooltip" title="0">0</div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label id="lblCoutZRCVaiss">Coût ZRC</label>
+                                                <div id="coutZRCVaiss" data-toggle="tooltip" title="0">0</div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label id="lblZRCVaiss">Total ZRC</label>
+                                                <div id="totalZRCVaiss" data-toggle="tooltip" title="0">0</div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label id="lblTempsVaiss">Temps de construction</label>
+                                                <div id="nbrTempsVaiss" data-toggle="tooltip" title="0">0</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="panCoutReelVaisseau">
+                                    <div class="col-md-6 col-xs-12 panel-body panel panel-default">
+                                        <h4>Coût et temps réels de construction</h4>
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <label id="lblCoutReelMetalVaiss">Coût Métal</label>
+                                                <div id="coutReelMetalVaiss" data-toggle="tooltip" title="0">0</div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label id="lblCoutReelTritVaiss">Coût Tritium</label>
+                                                <div id="coutReelTritVaiss" data-toggle="tooltip" title="0">0</div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label id="lblCoutReelPopVaiss">Population</label>
+                                                <div id="coutReelPopVaiss" data-toggle="tooltip" title="0">0</div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label id="lblCoutReelZRCVaiss">Coût ZRC</label>
+                                                <div id="coutReelZRCVaiss" data-toggle="tooltip" title="0">0</div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label id="lblZRCReelVaiss">Total ZRC</label>
+                                                <div id="totalZRCReelVaiss" data-toggle="tooltip" title="0">0</div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label id="lblTempsReelVaiss">Temps de construction</label>
+                                                <div id="nbrTempsReelVaiss" data-toggle="tooltip" title="0">0</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="panel panel-body panel-default">
+                                    <h4>
+                                        Liste de construction
+                                    </h4>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <input id="btnAjouterVaiss" type="button" class="btn btn-success pull-left" value="Ajouter" />
+                                        </div>
+                                    </div>
+                                    <br />
+                                    <table data-cache="false" data-height="300" id="listeVaisseaux" data-striped="true" class="table table-hover bootstrapTable">
+                                        <thead>
+                                            <tr>
+                                                <th data-field="codeVaiss" data-visible="false"></th>
+                                                <th data-field="nomVaiss">Vaisseau</th>
+                                                <th data-field="nombreVaiss" data-formatter="numberFormat">Nombre</th>
+                                                <th data-field="coutM" data-formatter="big_number">Métal</th>
+                                                <th data-field="coutT" data-formatter="big_number">Tritium</th>
+                                                <th data-field="coutP" data-formatter="big_number">Photopiles</th>
+                                                <th data-field="coutZRC" data-formatter="big_number">ZRC</th>
+                                                <th data-field="actions">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td><strong>Total</strong></td>
+                                                <td class="totalVaissNom"><strong></strong></td>
+                                                <td data-field="nombreVaiss" class="totalVaissNombre"><strong></strong></td>
+                                                <td data-field="coutM" class="totalVaissMetal"><strong></strong></td>
+                                                <td data-field="coutT" class="totalVaissTrit"><strong></strong></td>
+                                                <td data-field="coutP" class="totalVaissPP"><strong></strong></td>
+                                                <td data-field="coutZRC" class="totalVaissZRC"><strong></strong></td>
+                                                <td><strong></strong></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <input id="btnImporterListeVaisseaux" type="button" class="btn btn-warning pull-left" value="Importer" />
+                                            <input id="btnExporterListeVaisseaux" type="button" class="btn btn-primary pull-left" value="Exporter" />
+
+                                            <input id="btnViderVaiss" type="button" class="btn btn-danger pull-right" value="Vider" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-primary moduleCalc" style="display: none;" id="niveauxtechnologies">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <b>Niveaux des technologies</b>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="panNiveauTechs">
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading">
+                                            <h3 class="panel-title">
+                                                <b>Technologies spatiales</b>
+                                            </h3>
+                                        </div>
+                                        <div class="panel-body">
+                                            <div class="col-md-12">
+                                                <div class="col-md-3">
+                                                    <label for="nudTechStructure">Structure</label>
+                                                    <input id="nudTechStructure" type="text" class="niveauTech form-control spinner" value="0" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="nudTechAC">Armes conventionnelles</label>
+                                                    <input id="nudTechAC" type="text" class="niveauTech form-control spinner" value="0" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="nudTechPropConv">Prop. Conventionnelle</label>
+                                                    <input id="nudTechPropConv" type="text" class="niveauTech form-control spinner" value="0" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="nudTechLaser">Laser</label>
+                                                    <input id="nudTechLaser" type="text" class="niveauTech form-control spinner" value="0" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="nudTechIEM">Impulsion EM</label>
+                                                    <input id="nudTechIEM" type="text" class="niveauTech form-control spinner" value="0" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="nudTechPlasma">Plasma</label>
+                                                    <input id="nudTechPlasma" type="text" class="niveauTech form-control spinner" value="0" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="nudTechPH">Prop. Hyperespace</label>
+                                                    <input id="nudTechPH" type="text" class="niveauTech form-control spinner" value="0" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading">
+                                            <h3 class="panel-title">
+                                                <b>Énergie et information</b>
+                                            </h3>
+                                        </div>
+                                        <div class="panel-body">
+                                            <div class="col-md-12">
+                                                <div class="col-md-3">
+                                                    <label for="nudTechEnergie">Énergie</label>
+                                                    <input id="nudTechEnergie" type="text" class="niveauTech form-control spinner" value="0" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="nudTechSecurite">Sécurité</label>
+                                                    <input id="nudTechSecurite" type="text" class="niveauTech form-control spinner" value="0" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="nudTechEspio">Espionnage</label>
+                                                    <input id="nudTechEspio" type="text" class="niveauTech form-control spinner" value="0" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="nudTechInfo">Informatique</label>
+                                                    <input id="nudTechInfo" type="text" class="niveauTech form-control spinner" value="0" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="nudTechOQ">Ordinateurs Quantiques</label>
+                                                    <input id="nudTechOQ" type="text" class="niveauTech form-control spinner" value="0" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading">
+                                            <h3 class="panel-title">
+                                                <b>Sciences logistiques</b>
+                                            </h3>
+                                        </div>
+                                        <div class="panel-body">
+                                            <div class="col-md-12">
+                                                <div class="col-md-3">
+                                                    <label for="nudTechCons">Conscription</label>
+                                                    <input id="nudTechCons" type="text" class="niveauTech form-control spinner" value="0" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="nudTechStra">Stratégie</label>
+                                                    <input id="nudTechStra" type="text" class="niveauTech form-control spinner" value="0" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="nudTechSU">Superstructure</label>
+                                                    <input id="nudTechSU" type="text" class="niveauTech form-control spinner" value="0" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="nudTechExploi">Exploitation</label>
+                                                    <input id="nudTechExploi" type="text" class="niveauTech form-control spinner" value="0" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="nudTechTerra">Terraformation</label>
+                                                    <input id="nudTechTerra" type="text" class="niveauTech form-control spinner" value="0" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading">
+                                            <h3 class="panel-title">
+                                                <b>Maîtrises Ultimes</b>
+                                            </h3>
+                                        </div>
+                                        <div class="panel-body">
+                                            <div class="col-md-12">
+                                                <div class="col-md-3">
+                                                    <label for="nudTechME">Maîtrise de l'Espace</label>
+                                                    <input id="nudTechME" type="text" class="niveauTech form-control spinner" value="0" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="nudTechME">Maîtrise du Temps</label>
+                                                    <input id="nudTechME" type="text" class="niveauTech form-control spinner" value="0" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="nudTechMM">Maîtrise de la Matière</label>
+                                                    <input id="nudTechMM" type="text" class="niveauTech form-control spinner" value="0" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-primary moduleCalc" style="display: none;" id="404">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <b>Cette page n'existe pas.</b>
+                        </h2>
+                    </div>
+                </div>
+
+            </div>
+            <!-- /#page-content-wrapper -->
+        </div>
+        <!-- /#wrapper -->
+
+        <div class="navbar navbar-fixed-bottom text-center navbar-inverse">
+            <!-- role="footer"-->
+            <div class="container">
+                <div class="row">
+                    <div class="col-xs-12 col-md-12 navbar-text text-center">
+                        @ <span id="dateCopyRight"></span>  Gagn-Associates<br />
+                        Site web géré par <a href="http://gagn-associates.com">Aqua</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="rechercheVaisseau" tabindex="-1" role="search" aria-labelledby="titreRechVaisseau" aria-hidden="true">
+            
+        </div>
+
+        <script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
+        <!--<script type="text/javascript" src="js/bootstrap-table.min.js"></script>
+        <script type="text/javascript" src="js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="js/jquery.jstepper.min.js"></script>
+        <script type="text/javascript" src="js/jquery.numbox-1.1.1.min.js"></script>
+        <script type="text/javascript" src="js/jquery.bootstrap-touchspin.min.js"></script>
+        <!--<script type="text/javascript" src="js/responsive-tables.min.js"></script>-->
+        <!--<script type="text/javascript" src="js/jquery.mobile-1.4.5.min.js"></script>-->
+        <!--<script type="text/javascript" src="js/formules.js"></script>-->
+        <!--<script type="text/javascript">
+            $(function () {
+                if ($(location).attr('href').indexOf('dev') >= 0) {
+                    $('head').append('<link rel="stylesheet" href="css/style.css" />');
+                    $('body').append('<script type="text/javascript" src="js/formules.js" />');
+                }
+                else {
+                    $('head').append('<link rel="stylesheet" href="css/style.min.css" />');
+                    $('body').append('<script type="text/javascript" src="js/formules.min.js" />');
+                }
+            });
+        </script>-->
+        <!--<script type="text/javascript" src="js/analytics.js"></script>-->
+        <script data-main="js/app.js" src="js/require.js"></script>
+
+    </div>
+
+</body>
+
+</html>

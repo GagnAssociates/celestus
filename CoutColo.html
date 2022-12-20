@@ -1,0 +1,83 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+
+    <script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
+    <script data-main="js/appcoutcolo.js" src="js/require.js"></script>
+    <script type="text/javascript" src="js/Calculateurs/formules.js"></script>
+    <script type="text/javascript" src="js/Calculateurs/Global.js"></script>
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/bootstrap-table.min.css" />
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="css/bootstrap-theme.min.css" />
+    <link rel="stylesheet" href="css/font-awesome.min.css" />
+    <link rel="stylesheet" href="css/jquery.bootstrap-touchspin.min.css" />
+    <link rel="stylesheet" href="css/simple-sidebar.min.css" />
+</head>
+<body>
+    <div id="listeBats">
+
+    </div>
+    <script type="text/javascript">
+        $(function () {
+            $('#listeBats').empty();
+            var html = '<div class="container"><div class="row">'
+            $.each(listeBats, function (key, value) {
+                html += '<div class="col-md-6">' +
+                    '<label for="' + value.codeBat + '">' + value.nomBat + '</label>' +
+                    '<input id="' + value.codeBat + '" type="text" class="form-control spinner" value="0" />' +
+                    '</div>';
+            });
+            html += '</div>' +
+                '<div class="row">' +
+                '<div class="col-md-12">' +
+                '<label>Valeur ZRC totale</label>' +
+                '<div id="valeurTotale">1</div>' +
+                '<label>Valeur Métal totale</label>' +
+                '<div id="valeurMetal">1</div>' +
+                '<label>Valeur Tritium totale</label>' +
+                '<div id="valeurTritium">1</div>' +
+                '<label>Valeur Photopiles totale</label>' +
+                '<div id="valeurPP">1</div>' +
+                '<label>Population totale requise</label>' +
+                '<div id="popRequise">o</div>' +
+                '</div></div>' +
+                '</div>'
+
+            $('#listeBats').append(html);
+
+            $('input').on('change', function () {
+                var valeurTotale = 0, totalMetal = 0, totalTritium = 0, totalPP = 0, totalPop = 0;
+
+                $('input').each(function () {
+                    var actuel = 0;
+                    var voulu = $(this).val();
+                    var idItem = $(this).attr('id');
+                    var met = listeBats[idItem].coutM;
+                    var trit = listeBats[idItem].coutT;
+                    var pp = listeBats[idItem].coutP;
+                    var coutMetal = coutMetTritBat(met, actuel, voulu, 1.4, false, false, 0);
+                    var coutTrit = coutMetTritBat(trit, actuel, voulu, 1.4, false, false, 0);
+                    var coutPP = coutPPBat(pp, actuel, voulu, false);
+                    var tauxMet = localStorage.getItem('tauxMetal') / 1000000;
+                    var tauxTrit = localStorage.getItem('tauxTritium') / 1000000;
+                    var tauxPP = localStorage.getItem('tauxPP');
+                    var popRequise = populationRequise(listeBats[idItem].popParLvl, actuel, voulu);
+                    valeurTotale += coutZRCItem(coutMetal, coutTrit, coutPP, tauxMet, tauxTrit, tauxPP);
+                    totalMetal += coutMetal;
+                    totalTritium += coutTrit;
+                    totalPP += coutPP;
+                    totalPop += popRequise;
+                });
+                $('#valeurTotale').text(big_number(valeurTotale)).attr('title', formatNumber(valeurTotale));
+                $('#valeurMetal').text(big_number(totalMetal)).attr('title', formatNumber(totalMetal));
+                $('#valeurTritium').text(big_number(totalTritium)).attr('title', formatNumber(totalTritium));
+                $('#valeurPP').text(big_number(totalPP)).attr('title', formatNumber(totalPP));
+                $('#popRequise').text(big_number(totalPop)).attr('title', formatNumber(totalPop));
+            });
+        });
+    </script>
+</body>
+</html>

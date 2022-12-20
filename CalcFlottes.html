@@ -1,0 +1,420 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+    <title></title>
+
+    <script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
+    <script data-main="js/appcoutcolo.js" src="js/require.js"></script>
+    <script type="text/javascript" src="js/Calculateurs/formules.js"></script>
+    <script type="text/javascript" src="js/Calculateurs/Global.js"></script>
+    <script type="text/javascript" src="js/lib/responsive-tables.min.js"></script>
+    <script type="text/javascript" src="js/lib/bootstrap-table.min.js"></script>
+
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/bootstrap-table.min.css" />
+    <link rel="stylesheet" href="css/responsive-table.min.css" />
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="css/bootstrap-theme.min.css" />
+    <link rel="stylesheet" href="css/font-awesome.min.css" />
+    <link rel="stylesheet" href="css/jquery.bootstrap-touchspin.min.css" />
+    <link rel="stylesheet" href="css/simple-sidebar.min.css" />
+</head>
+<body>
+    <div id="init">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <label for="lienRC">Lien du rapport de combat</label>
+                    <input id="lienRC" type="text" class="form-control" />
+
+                    <label style="display:none;" for="htmlRC">Source de la page du rapport de combat</label>
+    <textarea id="htmlRC" class="form-control" style="height:250px;display:none;"></textarea>
+                    <div id="htmlLoad"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <div class="container" style="display:none;">
+            <div class="row">
+                <div class="col-md-12" id="htmlBrut">
+                    1
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="listeFlottes">
+
+    </div>
+    <script type="text/javascript">
+
+        var listeFlottes      = [];
+        var listeTypes        = [];
+        var listeCiblages     = [];
+        var flottesMemeJoueur = [];
+
+        function vaissParType(listeVaiss, type) {
+            var bonType = [];
+            $.each(Object.keys(listeVaiss), function (e, idvaiss) {
+                var vaiss = listeVaiss[idvaiss];
+                if (vaiss.Type == type) {
+                    bonType.push(vaiss);
+                }
+            });
+            return bonType;
+        }
+
+        function vaissParCiblage(listeVaiss, ciblage) {
+            var bonCiblage = [];
+            $.each(Object.keys(listeVaiss), function (e, idvaiss) {
+                var vaiss = listeVaiss[idvaiss];
+                if (vaiss.Ciblage == ciblage) {
+                    bonCiblage.push(vaiss);
+                }
+            });
+            //console.log(bonCiblage);
+            return bonCiblage;
+            //return (vaiss['Ciblage'] && !isNan(vaiss['Ciblage']) && vaiss['Ciblage'] == type);
+        }
+
+        function convertVaissCaracs(vaiss) {
+            var caracs = vaiss['Caracs'].split('<br/>');
+            //Validations
+            if (caracs == "") {
+                return {
+                    chassis: vaiss['Chassis'],
+                    IMG: vaiss['IMG'],
+                    Nb: parseInt(vaiss['Nb']),
+                    Type: vaiss['Type']
+                };
+            }
+            var map = {};
+            $.each(caracs, function (nocarac, partcarac) {
+                var partcaracs = partcarac.split(')');
+                $.each(partcaracs, function (nocarac, carac) {
+                    var splitted = carac.split(' : ');
+
+                    //if (!carac[1]) { return;}
+                    if (splitted.length == 1) {
+                        if (carac != "") {
+                            map['Nom'] = carac;
+                        }
+                    }
+                    else {
+                        map[splitted[0].trim().replace(/'/g, '').replace(/é/g, 'e').replace(/â/g, 'a')] = splitted[1].split('(')[0].trim().replace(/,/g, '');
+                    }
+                });
+            });
+            
+            if (!listeTypes.find(element => element == map['Type'])) {
+                listeTypes[vaiss['Type']] = map['Type'];
+            }
+            if (!listeCiblages.find(element => element == map['Cible'])) {
+                listeCiblages.push(map['Cible']);
+            }
+            if (!map['Degats dexposition']) {
+                return {
+                    chassis: vaiss['Chassis'],
+                    IMG: vaiss['IMG'],
+                    Nb: parseInt(vaiss['Nb']),
+                    Type: vaiss['Type'],
+                    BlindageAC: (map['Blindage AC'] ? parseFloat(map['Blindage AC']) : 0),
+                    BlindageLa: (map['Blindage La'] ? parseFloat(map['Blindage La']) : 0),
+                    BlindagePl: (map['Blindage Pl'] ? parseFloat(map['Blindage Pl']) : 0),
+                    BlindageEM: (map['Blindage EM'] ? parseFloat(map['Blindage EM']) : 0),
+                    Structure: parseFloat(map['Structure']),
+                    Nom: map['Nom'],
+                    DegatsAC: parseFloat(map['Degats AC']),
+                    DegatsLa: parseFloat(map['Degats La']),
+                    DegatsPl: parseFloat(map['Degats Pl']),
+                    DegatsEM: parseFloat(map['Degats EM']),
+                    Ciblage: map['Cible'],
+                    TypeTexte: map['Type'],
+                    ChassisTexte: map['Chassis']
+                }; }
+            else {
+                return {
+                    chassis: vaiss['Chassis'],
+                    IMG: vaiss['IMG'],
+                    Nb: parseInt(vaiss['Nb']),
+                    Type: vaiss['Type'],
+                    Structure: parseFloat(map['Structure']),
+                    BlindageAC: (map['Blindage AC'] ? parseFloat(map['Blindage AC']) : 0),
+                    BlindageLa: (map['Blindage La'] ? parseFloat(map['Blindage La']) : 0),
+                    BlindagePl: (map['Blindage Pl'] ? parseFloat(map['Blindage Pl']) : 0),
+                    BlindageEM: (map['Blindage EM'] ? parseFloat(map['Blindage EM']) : 0),
+                    Structure: parseFloat(map['Structure']),
+                    Nom: map['Nom'],
+                    DegatsAC: parseFloat(map['Degats AC']),
+                    DegatsLa: parseFloat(map['Degats La']),
+                    DegatsPl: parseFloat(map['Degats Pl']),
+                    DegatsEM: parseFloat(map['Degats EM']),
+                    Ciblage: map['Cible'],
+                    Expo: parseFloat(map['Degats dexposition'].replace('+', '').replace('%', '')),
+                    TypeTexte: map['Type'],
+                    ChassisTexte: map['Chassis']
+                };
+            }
+
+        }
+        
+
+        function analyzeRC() {
+
+            listeFlottes = [];
+            listeTypes = [];
+            listeCiblages = [];
+            flottesMemeJoueur = [];
+
+            $.globalEval($('#htmlBrut script')[0].innerText);
+
+            //Déclaration des flottes
+            $.each(Rounds[0]['A'], function (noflotte, flotte) {
+                if (!flotte) { return;}
+                listeFlottes['A' + noflotte] = flotte;
+                listeFlottes['A' + noflotte]['Eff'] = parseFloat(listeFlottes['A' + noflotte]['Eff']);
+                listeFlottes['A' + noflotte]['OfficierNiv'] = parseFloat(listeFlottes['A' + noflotte]['OfficierNiv']);
+                listeFlottes['A' + noflotte]['PCom'] = parseFloat(listeFlottes['A' + noflotte]['PCom']);
+                listeFlottes['A' + noflotte]['PComMax'] = parseFloat(listeFlottes['A' + noflotte]['PComMax']);
+                if (!flottesMemeJoueur[flotte.Pseudo.replace(/ /g, '').replace(/'/g, '').replace(/\*/g, '')]) { flottesMemeJoueur[flotte.Pseudo.replace(/ /g, '').replace(/'/g, '').replace(/\*/g, '')] = 0; }
+                else {
+                    flottesMemeJoueur[flotte.Pseudo.replace(/ /g, '').replace(/'/g, '').replace(/\*/g, '')]++;
+                }
+            });
+
+            $.each(Rounds[0]['D'], function (noflotte, flotte) {
+                if (!flotte) { return; }
+                listeFlottes['D' + noflotte] = flotte;
+                listeFlottes['D' + noflotte]['Eff'] = parseFloat(listeFlottes['D' + noflotte]['Eff']);
+                listeFlottes['D' + noflotte]['OfficierNiv'] = parseFloat(listeFlottes['D' + noflotte]['OfficierNiv']);
+                listeFlottes['D' + noflotte]['PCom'] = parseFloat(listeFlottes['D' + noflotte]['PCom']);
+                listeFlottes['D' + noflotte]['PComMax'] = parseFloat(listeFlottes['D' + noflotte]['PComMax']);
+                if (!flottesMemeJoueur[flotte.Pseudo.replace(/ /g, '').replace(/'/g, '').replace(/\*/g, '')]) { flottesMemeJoueur[flotte.Pseudo.replace(/ /g, '').replace(/'/g, '').replace(/\*/g, '')] = 0; }
+                else {
+                    flottesMemeJoueur[flotte.Pseudo.replace(/ /g, '').replace(/'/g, '').replace(/\*/g, '')]++;
+                }
+            });
+            //console.log(listeFlottes);
+
+
+            //Ajout des vaisseaux aux flottes
+            $.each(Rounds[1]['A'], function (noflotte, flotte) {
+                if (!flotte) { return; }
+                listeFlottes['A' + noflotte]['Vaiss'] = [];
+                $.each(Object.keys(flotte), function (novaiss, idvaiss) {
+                    listeFlottes['A' + noflotte]['Vaiss'][idvaiss] = convertVaissCaracs(flotte[idvaiss]);
+                });
+            });
+
+            $.each(Rounds[1]['D'], function (noflotte, flotte) {
+                if (!flotte) { return; }
+                listeFlottes['D' + noflotte]['Vaiss'] = [];
+                $.each(Object.keys(flotte), function (novaiss, idvaiss) {
+                    listeFlottes['D' + noflotte]['Vaiss'][idvaiss] = convertVaissCaracs(flotte[idvaiss]);
+    
+                });
+            });
+
+
+
+            //Calcul des dégâts totaux par cible et type
+            $.each(Object.keys(listeFlottes), function (idflotte, flotte) {
+                listeFlottes[flotte]['DegatsParCible'] = [];
+                $.each(listeCiblages, function (e,ciblage)
+                {
+                    listeFlottes[flotte]['DegatsParCible'][ciblage] = {
+                        deg: {AC:0,La:0,Pl:0,EM:0} };
+                    //console.log(vaissParCiblage(listeFlottes[flotte]['Vaiss'], ciblage),ciblage);
+                    $.each(vaissParCiblage(listeFlottes[flotte]['Vaiss'], ciblage), function (idvaiss, vaisseau) {
+                        listeFlottes[flotte]['DegatsParCible'][ciblage]['deg']['AC'] += (vaisseau.Nb * vaisseau.DegatsAC);
+                        listeFlottes[flotte]['DegatsParCible'][ciblage]['deg']['La'] += (vaisseau.Nb * vaisseau.DegatsLa);
+                        listeFlottes[flotte]['DegatsParCible'][ciblage]['deg']['Pl'] += (vaisseau.Nb * vaisseau.DegatsPl);
+                        listeFlottes[flotte]['DegatsParCible'][ciblage]['deg']['EM'] += (vaisseau.Nb * vaisseau.DegatsEM);
+                        /*if ((vaisseau.DegatsIEM)) {
+                            listeFlottes[flotte]['DegatsParCible'][ciblage]['iem'] += (vaisseau.Nb * vaisseau.DegatsIEM);
+                        }*/
+                    });
+                });
+
+                listeFlottes[flotte]['StructureParType'] = [];
+                $.each(Object.keys(listeTypes), function (idtype, type) {
+                    listeFlottes[flotte]['StructureParType'][listeTypes[type]] = { Structure:0,BlindageAC: 0, BlindageLa: 0, BlindagePl: 0, BlindageEM: 0};
+                    //console.log(vaissParType(listeFlottes[flotte]['Vaiss'], type), type);
+                    $.each(vaissParType(listeFlottes[flotte]['Vaiss'], type), function (idvaiss, vaisseau) {
+                        listeFlottes[flotte]['StructureParType'][listeTypes[type]].Structure += (vaisseau.Nb * vaisseau.Structure);
+                        listeFlottes[flotte]['StructureParType'][listeTypes[type]].BlindageAC += (vaisseau.Nb * vaisseau.BlindageAC);
+                        listeFlottes[flotte]['StructureParType'][listeTypes[type]].BlindageLa += (vaisseau.Nb * vaisseau.BlindageLa);
+                        listeFlottes[flotte]['StructureParType'][listeTypes[type]].BlindagePl += (vaisseau.Nb * vaisseau.BlindagePl);
+                        listeFlottes[flotte]['StructureParType'][listeTypes[type]].BlindageEM += (vaisseau.Nb * vaisseau.BlindageEM);
+                    });
+                });
+            });
+
+
+            showTables();
+
+
+        }
+
+        function showTables() {
+            
+            $('#listeFlottes').empty();
+            var html = '<div class="container"> <div class="row"> <div class="row panel panel-group" id="#accordionFlottes">';
+            $.each(Object.keys(listeFlottes), function (index, nomFlotte) {
+                var flotte = listeFlottes[nomFlotte];
+                var pseudoEncoded = flotte.Pseudo.replace(/ /g, '').replace(/'/g, '').replace(/\*/g, '');
+                flottesMemeJoueur[pseudoEncoded]++;
+                var nbAutresFlottes = flottesMemeJoueur[pseudoEncoded];
+
+                html               +=
+                    '<div class     ="panel panel-body panel-default">' +
+                    '<div class     ="panel-heading">' +
+                    '<h3 class      ="panel-title">' +
+                '<a data-toggle     ="collapse" data-parent="#accordionFlottes" href="#flotte' + pseudoEncoded + nbAutresFlottes + '">' + flotte.Pseudo +
+                    ' </a>' +
+                    '</h3>' +
+                    '</div>' +
+                '<div id="flotte' + pseudoEncoded + nbAutresFlottes + '" class="panel-collapse collapse">' +
+                    '<div class="panel-body">' +
+
+                '<br />' +
+                    //Table dégâts par cible
+                    '<div class="col-md-6">' +
+                '<table data-cache="false" data-height="300" id="listeDegats' + pseudoEncoded + nbAutresFlottes + '" data-striped="true" class="table table-hover bootstrapTable">' +
+                    '<thead>' +
+                    '<tr>' +
+                    '<th data-field="Ciblage" data-visible="true">Ciblage</th>' +
+                '<th data-field="Total" data-formatter="big_number">Attaque AC</th>' +
+                '<th data-field="Total" data-formatter="big_number">Attaque La</th>' +
+                '<th data-field="Total" data-formatter="big_number">Attaque Pl</th>' +
+                '<th data-field="Total" data-formatter="big_number">IEM</th>' +
+                '<th data-field="Total" data-formatter="big_number">Total</th>' +
+                    '</tr>' +
+                    '</thead>' +
+                    '<tbody>';
+                var attaqueTotale = { AC: 0, La: 0, Pl: 0, EM : 0};
+
+                $.each(Object.keys(flotte.DegatsParCible), function (index, cible) {
+                    if (flotte.DegatsParCible[cible].deg['AC'] != 0 || flotte.DegatsParCible[cible].deg['La'] != 0 || flotte.DegatsParCible[cible].deg['Pl'] != 0 || flotte.DegatsParCible[cible].deg['EM'] != 0) {
+                        html += '<tr><td>' + cible + '</td><td data-toggle="tooltip" title="' + formatNumber(flotte.DegatsParCible[cible].deg['AC']) + '">' + big_number(flotte.DegatsParCible[cible].deg['AC']) + '</td><td data-toggle="tooltip" title="' + formatNumber(flotte.DegatsParCible[cible].deg['La']) + '">' + big_number(flotte.DegatsParCible[cible].deg['La']) + '</td><td data-toggle="tooltip" title="' + formatNumber(flotte.DegatsParCible[cible].deg['Pl']) + '">' + big_number(flotte.DegatsParCible[cible].deg['Pl']) + '</td><td data-toggle="tooltip" title="' + formatNumber(flotte.DegatsParCible[cible].deg['EM']) + '">' + big_number(flotte.DegatsParCible[cible].deg['EM']) + '</td><td data-toggle="tooltip" title="' + formatNumber(flotte.DegatsParCible[cible].deg['EM'] + flotte.DegatsParCible[cible].deg['La'] + flotte.DegatsParCible[cible].deg['Pl'] + flotte.DegatsParCible[cible].deg['AC']) + '">' + big_number(flotte.DegatsParCible[cible].deg['EM'] + flotte.DegatsParCible[cible].deg['La'] + flotte.DegatsParCible[cible].deg['Pl'] + flotte.DegatsParCible[cible].deg['AC']) +'</td></tr>';
+                        attaqueTotale['AC'] += flotte.DegatsParCible[cible].deg['AC'];
+                        attaqueTotale['La'] += flotte.DegatsParCible[cible].deg['La'];
+                        attaqueTotale['Pl'] += flotte.DegatsParCible[cible].deg['Pl'];
+                        attaqueTotale['EM'] += flotte.DegatsParCible[cible].deg['EM'];
+                    }
+                });
+
+                    html += '</tbody >'+
+                        '<tfoot>'+
+                            '<tr>'+
+                                '<td><strong>Total</strong></td>'+
+                        '<td data-toggle="tooltip" title="' + formatNumber(attaqueTotale['AC']) + '"><strong>' + big_number(attaqueTotale['AC']) + '</strong></td>' +
+                        '<td data-toggle="tooltip" title="' + formatNumber(attaqueTotale['La']) + '"><strong>' + big_number(attaqueTotale['La']) + '</strong></td>' +
+                        '<td data-toggle="tooltip" title="' + formatNumber(attaqueTotale['Pl']) + '"><strong>' + big_number(attaqueTotale['Pl']) + '</strong></td>' +
+                        '<td data-toggle="tooltip" title="' + formatNumber(attaqueTotale['EM']) + '"><strong>' + big_number(attaqueTotale['EM']) + '</strong></td>' +
+                        '<td data-toggle="tooltip" title="' + formatNumber(attaqueTotale['EM'] + formatNumber(attaqueTotale['Pl'] + formatNumber(attaqueTotale['La'] + formatNumber(attaqueTotale['AC']) + '"><strong>' + big_number(attaqueTotale['EM'] + formatNumber(attaqueTotale['Pl'] + formatNumber(attaqueTotale['La'] + formatNumber(attaqueTotale['AC']) + '</strong></td>' +
+                            '</tr>'+
+                        '</tfoot>'+
+                        '</table >' +
+                        '</div>' +
+                        //Table structure par type
+                    '<div class="col-md-6">' +
+                        '<table data-cache="false" data-height="300" id="listeTypes' + pseudoEncoded + '" data-striped="true" class="table table-hover bootstrapTable">' +
+                    '<thead>' +
+                    '<tr>' +
+                    '<th data-field="Type" data-visible="true">Type</th>' +
+                        '<th data-field="BlindageAC" data-formatter="big_number">Blindage AC</th>' +
+                        '<th data-field="BlindageLa" data-formatter="big_number">Blindage La</th>' +
+                        '<th data-field="BlindagePl" data-formatter="big_number">Blindage Pl</th>' +
+                        '<th data-field="BlindageEM" data-formatter="big_number">Blindage EM</th>' +
+                        '<th data-field="Total" data-formatter="big_number">Structure totale</th>' +
+                    '</tr>' +
+                    '</thead>' +
+                    '<tbody>';
+                var structureTotale = { Structure: 0, BlindageAC: 0, BlindageLa: 0, BlindagePl: 0, BlindageEM: 0 };
+                $.each(Object.keys(flotte.StructureParType, ), function (index, type) {
+                    if (flotte.StructureParType[type].Structure != 0) {
+                        html += '<tr><td>' + type + '</td>' +
+                            '<td data-toggle="tooltip" title="' + formatNumber(flotte.StructureParType[type].BlindageAC) + '">' + big_number(flotte.StructureParType[type].BlindageAC) + '</td>' +
+                            '<td data-toggle="tooltip" title="' + formatNumber(flotte.StructureParType[type].BlindageLa) + '">' + big_number(flotte.StructureParType[type].BlindageLa) + '</td>' +
+                            '<td data-toggle="tooltip" title="' + formatNumber(flotte.StructureParType[type].BlindagePl) + '">' + big_number(flotte.StructureParType[type].BlindagePl) + '</td>' +
+                            '<td data-toggle="tooltip" title="' + formatNumber(flotte.StructureParType[type].BlindageEM) + '">' + big_number(flotte.StructureParType[type].BlindageEM) + '</td>' +
+                            '<td data-toggle="tooltip" title="' + formatNumber(flotte.StructureParType[type].Structure) + '">' + big_number(flotte.StructureParType[type].Structure) + '</td>' +
+                            '</tr > ';
+                        structureTotale.BlindageAC += flotte.StructureParType[type].BlindageAC;
+                        structureTotale.BlindageLa += flotte.StructureParType[type].BlindageLa;
+                        structureTotale.BlindagePl += flotte.StructureParType[type].BlindagePl;
+                        structureTotale.BlindageEM += flotte.StructureParType[type].BlindageEM;
+                        structureTotale.Structure += flotte.StructureParType[type].Structure;
+                    }
+                });
+
+                html += '</tbody >' +
+                    '<tfoot>' +
+                    '<tr>' +
+                    '<td><strong>Total</strong></td>' +
+                    '<td data-toggle="tooltip" title="' + formatNumber(structureTotale.BlindageAC) + '"><strong>' + big_number(structureTotale.BlindageAC) + '</strong></td>' +
+                    '<td data-toggle="tooltip" title="' + formatNumber(structureTotale.BlindageLa) + '"><strong>' + big_number(structureTotale.BlindageLa) + '</strong></td>' +
+                    '<td data-toggle="tooltip" title="' + formatNumber(structureTotale.BlindagePl) + '"><strong>' + big_number(structureTotale.BlindagePl) + '</strong></td>' +
+                    '<td data-toggle="tooltip" title="' + formatNumber(structureTotale.BlindageEM) + '"><strong>' + big_number(structureTotale.BlindageEM) + '</strong></td>' +
+                    '<td data-toggle="tooltip" title="' + formatNumber(structureTotale.Structure) + '"><strong>' + big_number(structureTotale.Structure) + '</strong></td>' +
+                    '</tr>' +
+                    '</tfoot>' +
+                    '</table >' +
+                    '</div>' +
+                    
+                    '</div>'+
+                '</div>' +
+                        '   </div>';
+            
+            });
+            html += '</div>' +
+                '</div>'
+
+            $('#listeFlottes').append(html);
+
+
+            $('table').bootstrapTable('destroy');
+            if ($(this).width() < 981) {
+                //do something
+                $('table').bootstrapTable({
+                    cardView: true
+                });
+            } else {
+                $('#listeTechnologies').bootstrapTable({
+                    cardView: false
+                });
+            }
+        }
+        $(function () {
+            
+            /*$('#htmlBrut').load('./SourceRC.html', function () {
+                $('#htmlRC').text($('#htmlBrut')[0].innerHTML);
+                analyzeRC();
+
+            });*/
+
+            var proxy = 'https://cors-anywhere.herokuapp.com/';
+            
+
+            $('#lienRC').on('change', function () {
+
+
+                var finalURL = proxy + $('#lienRC').val();
+
+                $.get(finalURL, function (data) {
+                    data = data.substr(data.indexOf('<body'), data.indexOf('</body>')).replace('RCplayer();', '');
+                    $('#htmlBrut').empty();
+                    $('#htmlRC').text(data);
+                    $('#htmlBrut').html(data);
+                    analyzeRC();
+                    //console.log($('#htmlBrut body script')[0].innerText);
+                }, "html");
+
+
+            });
+        });
+    </script>
+</body>
+</html>

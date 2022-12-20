@@ -1,0 +1,26 @@
+﻿Version 1.0 (2014-10-11)
+-Interface de calcul du coût des bâtiments et modules MK II, avec affichage du résultat selon le cours inscrit
+
+Version 1.5 (2014-11-28)
+-Correction du temps de construction des vaisseaux (Un chantier ne peut plus produire qu'un seul module à la fois)
+-Modification de certains contrôles (cases à cocher et sélections numériques)
+-Ajout du nom de la colonie
+-Ajout d'une liste de bâtiments à construire
+	-Fonction d'importation et exportation des données, avec copier-coller manuel en raison de limitations du navigateur
+	-En cliquant sur un bâtiment, les informations sont affichées dans le calculateur
+	-Bouton pour vider la liste
+	-Un résumé peut être affiché, avec un bouton pour tout sélectionner, pour permettre de rapidement envoyer la commande détaillée au bâtisseur
+-Une augmentation de 0 bâtiment est maintenant correctement affichée
+-Prise en compte de la compétence "Optimisation des plans"
+-Le site est maintenant disponible via CloudFlare, donc plus facilement accessible, plus rapide et moins souvent hors-ligne
+-Diverses corrections mineures des fonctions, ayant un impact uniquement sur la lisibilité du code
+-Les bâtiments non-constructibles avec des MK II n'ont plus de quantité affichée
+
+Version 1.5.1 (2014-11-29)
+-Correction du temps de construction qui ne s'affiche plus du tout
+
+Version 1.5.2 (2015-04-01)
+-Le coût des bâtiments en PhotoPiles via les modules MK II était calculé pour les bâtiments pour lesquels il est impossible de les utiliser (Accélérateur Temporel, Oeil Céleste, etc.)
+-Ajout du coût en population dans le coût des modules et le résumé.
+-Correction du chargement dynamique des scripts (impact sur le code uniquement)
+-Début d'adaptation des scripts pour un fonctionnement modulaire (impact sur le code uniquement)
